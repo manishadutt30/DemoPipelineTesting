@@ -36,3 +36,25 @@ steps:
   inputs:  
       codeCoverageTool: Cobertura  
       summaryFileLocation: '$(Build.SourcesDirectory)/coverlet/reports/Cobertura.xml'
+  
+- task: DotNetCoreCLI@2
+  displayName: 'Publish and run'
+  inputs:
+    publishWebProjects: true
+    command: publish
+    arguments: '-- configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+    zipAfterPublish: true
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Build Artifact'
+  inputs:
+   PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+   ArtifactName: 'DotNetCoreApp1'
+
+- task: AzureWebApp@1
+  displayName: 'Deploy to Azure Web App'
+  inputs:
+      azureSubscription: 'TestPipelineRS'
+      appType: 'webApp'
+      appName: 'TestPipelineNew'
+      package: '$(Build.ArtifactStagingDirectory)/**/*.zip'
